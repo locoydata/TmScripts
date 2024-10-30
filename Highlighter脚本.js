@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Airtable Highlighter
+// @name         Highlighter
 // @namespace    http://tampermonkey.net/
 // @version      1.0
 // @description  Highlights text on pages matching Airtable data

@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Airtable 添加记录工具
+// @name         添加记录
 // @namespace    http://tampermonkey.net/
 // @version      1.0
 // @description  选择表并向 Airtable 添加记录
