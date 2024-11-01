@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         注释网页
+// @name         Annotations
 // @namespace    http://tampermonkey.net/
 // @version      1.0
 // @description  在网页中直接显示注释并高亮文本
@@ -13,7 +13,7 @@
 
     const ACCESS_TOKEN = 'patbkrCcuDhqSEPik.f9945b399f40ab7dbeff15e8b436b8fa47de166bab355e6209c51c86106b4549'; // 在此替换为你的个人访问令牌
     const BASE_ID = 'appWNNByUsenTcJML'; // 在此替换为你的Base ID
-    const TABLE_NAMES = ['ae订单','供应商备注', 'SKU供应商', 'SKU采购链接', 'SKU备注', '1688订单物流', '临时']; // 所有表格的名称
+    const TABLE_NAMES = ['ae订单','供应商备注', 'SKU供应商', 'SKU采购链接', 'SKU备注', '1688订单物流', '多多订单物流', 'Warn']; // 所有表格的名称
 
     const annotations = {};
 

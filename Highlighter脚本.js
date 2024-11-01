@@ -36,11 +36,11 @@
     'use strict';
 
     const ACCESS_TOKEN = 'patbkrCcuDhqSEPik.f9945b399f40ab7dbeff15e8b436b8fa47de166bab355e6209c51c86106b4549'; // Replace with your personal access token
-    const BASE_ID = 'appWNNByUsenTcJML'; // 在此替换为你的Base ID
-    const TABLE_NAME = '高亮'; // 替换为你的 Airtable 表名
+    const BASE_ID = 'appfvvlcRZhbJhWA2'; // 在此替换为你的Base ID
+    const TABLE_NAME = '文本字符'; // 替换为你的 Airtable 表名
 
     const highlights = [];
-    const highlightColors = ['yellow', 'lightblue', 'lightgreen', 'pink', 'orange']; // 添加更多颜色
+    const highlightColors = ['yellow', 'lightblue', 'lightgreen', 'pink', 'orange', 'lavender', 'lightcoral', 'lightgoldenrodyellow', 'lightgrey', 'beige', 'lightcyan', 'thistle', 'peachpuff', 'palegreen', 'plum'];// 添加更多颜色
 
     // 加载高亮文本
     async function loadHighlights() {
@@ -71,49 +71,63 @@
     }
 
     // 创建高亮
-    function highlightText(node) {
-        if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim()) {
-            const text = node.nodeValue;
-            const parentNode = node.parentNode;
+function highlightText(node) {
+    if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim()) {
+        const text = node.nodeValue;
+        const parentNode = node.parentNode;
 
+        highlights.forEach((highlight, index) => {
+            const regex = new RegExp(`(${highlight})`, 'gi');
+            if (regex.test(text)) {
+                // 找到匹配的高亮文本
+                let match = regex.exec(text);
+                while (match) {
+                    // 创建一个新的 Range 对象
+                    const range = document.createRange();
+                    // 设置 Range 的起始位置
+                    range.setStart(node, match.index);
+                    // 设置 Range 的结束位置
+                    range.setEnd(node, match.index + match[0].length);
+
+                    // 创建一个新的 <span> 元素
+                    const span = document.createElement('span');
+                    span.style.backgroundColor = highlightColors[index % highlightColors.length];
+                    span.style.fontWeight = 'bold';
+                    // 设置 <span> 元素的文本内容
+                    span.textContent = match[0];
+
+                    // 使用 Range 对象将匹配到的文本替换为 <span> 元素
+                    range.surroundContents(span);
+
+                    // 继续寻找下一个匹配项
+                    match = regex.exec(text);
+                }
+            }
+        });
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+        if (node.tagName === 'DIV' || node.tagName === 'SPAN') {
+            // 如果当前节点是 <div> 或 <span> 元素，且包含高亮文本
+            const text = node.textContent;
             highlights.forEach((highlight, index) => {
-                const regex = new RegExp(`(${highlight})`, 'gi'); // 忽略大小写匹配
-                if (regex.test(text)) {
-                    // 使用 Range 对象进行安全替换
-                    let match = regex.exec(text);
-                    while (match) {
-                        const range = document.createRange();
-                        range.setStart(node, match.index);
-                        range.setEnd(node, match.index + match[0].length);
-
-                        const span = document.createElement('span');
-                        span.style.backgroundColor = highlightColors[index % highlightColors.length]; // 使用循环获取颜色
-                        span.style.fontWeight = 'bold'; // 可选：加粗高亮文本
-                        span.textContent = match[0];
-
-                        range.surroundContents(span);
-
-                        match = regex.exec(text);
+                if (text.includes(highlight)) {
+                    // 遍历子节点，找到包含高亮文本的子节点，并对其进行高亮
+                    for (let i = 0; i < node.childNodes.length; i++) {
+                        const child = node.childNodes[i];
+                        if (child.nodeType === Node.TEXT_NODE && child.nodeValue.includes(highlight)) {
+                            // 找到包含高亮文本的子节点，对其进行高亮
+                            child.parentElement.style.backgroundColor = highlightColors[index % highlightColors.length];
+                            break; // 找到一个子节点后，停止循环
+                        }
                     }
                 }
             });
-        } else if (node.nodeType === Node.ELEMENT_NODE) {
-            // 遍历所有子节点
-            for (const child of node.childNodes) {
-                highlightText(child);
-            }
-
-            // 如果当前节点是 `<span>` 元素，并且包含高亮文本，则设置背景色
-            if (node.tagName === 'SPAN') {
-                const text = node.textContent;
-                highlights.forEach((highlight, index) => {
-                    if (text.includes(highlight)) {
-                        node.style.backgroundColor = highlightColors[index % highlightColors.length]; // 使用循环获取颜色
-                    }
-                });
-            }
+        }
+        // 遍历所有子节点
+        for (const child of node.childNodes) {
+            highlightText(child);
         }
     }
+}
 
     // 观察 DOM 的变化并高亮新内容
     function observeDOMChanges() {
