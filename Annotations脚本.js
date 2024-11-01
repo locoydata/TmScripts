@@ -6,6 +6,8 @@
 // @match        *://*/*
 // @exclude      *://*.example.com/login*  // 排除所有 login 页面
 // @grant        none
+// @updateURL    https://locoydata.github.io/TmScripts/Annotations脚本.js
+// @downloadURL  https://locoydata.github.io/TmScripts/Annotations脚本.js
 // ==/UserScript==
 
 (async function() {

@@ -5,7 +5,11 @@
 // @description  Highlights text on pages matching Airtable data
 // @match        *://*/*
 // @grant        none
+// @updateURL    https://locoydata.github.io/TmScripts/Highlighter脚本.js
+// @downloadURL  https://locoydata.github.io/TmScripts/Highlighter脚本.js
 // ==/UserScript==
+
+
 //功能概述：
 //从 Airtable 加载高亮文本:
 //脚本使用 fetch 函数从您的 Airtable 表格中获取数据，并提取 "高亮文本" 字段的值。
