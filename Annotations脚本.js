@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Annotations
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  在网页中直接显示注释并高亮文本
 // @match        *://*/*
 // @exclude      *://*.example.com/login*  // 排除所有 login 页面

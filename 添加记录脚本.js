@@ -6,6 +6,8 @@
 // @match        *://*/*
 // @exclude      *://work.1688.com/*  // 排除页面
 // @grant        none
+// @updateURL    https://locoydata.github.io/TmScripts/添加记录脚本.js
+// @downloadURL  https://locoydata.github.io/TmScripts/添加记录脚本.js
 // ==/UserScript==
 
 (async function() {
