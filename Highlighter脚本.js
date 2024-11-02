@@ -4,6 +4,7 @@
 // @version      1.0
 // @description  Highlights text on pages matching Airtable data
 // @match        *://*/*
+// @exclude      *://airtable.com/*  // 排除页面
 // @grant        none
 // @updateURL    https://locoydata.github.io/TmScripts/Highlighter脚本.js
 // @downloadURL  https://locoydata.github.io/TmScripts/Highlighter脚本.js

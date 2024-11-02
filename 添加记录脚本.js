@@ -5,6 +5,7 @@
 // @description  选择表并向 Airtable 添加记录
 // @match        *://*/*
 // @exclude      *://work.1688.com/*  // 排除页面
+// @exclude      *://airtable.com/*  // 排除页面
 // @grant        none
 // @updateURL    https://locoydata.github.io/TmScripts/添加记录脚本.js
 // @downloadURL  https://locoydata.github.io/TmScripts/添加记录脚本.js

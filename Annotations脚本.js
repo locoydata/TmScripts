@@ -5,6 +5,7 @@
 // @description  在网页中直接显示注释并高亮文本
 // @match        *://*/*
 // @exclude      *://*.example.com/login*  // 排除所有 login 页面
+// @exclude      *://airtable.com/*  // 排除页面
 // @grant        none
 // @updateURL    https://locoydata.github.io/TmScripts/Annotations脚本.js
 // @downloadURL  https://locoydata.github.io/TmScripts/Annotations脚本.js

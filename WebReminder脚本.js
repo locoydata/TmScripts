@@ -4,6 +4,7 @@
 // @version      2.6
 // @description  根据 Airtable 数据在指定网站上显示浮动提醒，支持按钮点击显示信息框
 // @match        *://*/*
+// @exclude      *://airtable.com/*  // 排除页面
 // @grant        GM_xmlhttpRequest
 // @updateURL    https://locoydata.github.io/TmScripts/WebReminder脚本.js
 // @downloadURL  https://locoydata.github.io/TmScripts/WebReminder脚本.js
