@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WebReminder
 // @namespace    http://tampermonkey.net/
-// @version      2.6
+// @version      2.7
 // @description  根据 Airtable 数据在指定网站上显示浮动提醒，支持按钮点击显示信息框
 // @match        *://*/*
 // @exclude      *://airtable.com/*  // 排除页面
@@ -9,7 +9,7 @@
 // @updateURL    https://locoydata.github.io/TmScripts/WebReminder脚本.js
 // @downloadURL  https://locoydata.github.io/TmScripts/WebReminder脚本.js
 // ==/UserScript==
-
+// 油猴浏览器扩展自动更新逻辑为  比对版本号确认是否更新, 修改脚本后需修改版本号
 (function () {
     'use strict';
 
