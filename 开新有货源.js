@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         采集开新有商品信息并上传到 Airtable (通用版)
+// @name         开新有货源
 // @namespace    http://tampermonkey.net/
-// @version      1.1
-// @description  一键采集商品信息（标题和拿货价）并上传到 Airtable（通用版）
+// @version      1.3
+// @description  采集商品信息并上传到 Airtable，防止重复上传
 // @author       [你的名字]
 // @match        *://*/*
 // @grant        GM_xmlhttpRequest
@@ -19,9 +19,9 @@
 
     // 创建悬浮按钮
     const button = document.createElement('button');
-    button.innerText = '采集商品并上传图片';
+    button.innerText = '开新有';
     button.style.position = 'fixed';
-    button.style.bottom = '20px';
+    button.style.bottom = '60px';
     button.style.right = '20px';
     button.style.zIndex = '1000';
     button.style.padding = '10px';
@@ -34,33 +34,40 @@
     document.body.appendChild(button);
 
     button.addEventListener('click', async () => {
-        // 获取商品信息
         let title = '';
+        let type = '';
         let price = 0;
         let sourceUrl = '';
         let seller = '';
         let pickupPoint = '';
         let imageUrls = [];
 
-        // 尝试从常见的元素中获取信息
+
+        const now = new Date()
+        //const recordTime = now.toISOString(); // 将当前时间转换为 ISO 字符串, 包含时间, 这是airtable中对应列类型为日期并需要include time
+        const recordTime = now.toISOString().split('T')[0]; // 如果只需要日期部分
+
         const titleElement = document.querySelector('.product_title .huohao');
         if (titleElement) {
             title = titleElement.textContent.trim().replace('货号：', '');
         }
 
-        // 获取价格
+        // 获取类型
+        const typeElement = document.querySelector('.special-item span:first-child'); // 选择第一个 span
+        if (typeElement) {
+            type = typeElement.textContent.trim().replace('类型：', ''); // 去除 "类型：" 前缀
+        }
+
         const priceElement = document.querySelector('.price_box .sku-price');
         if (priceElement) {
             price = parseFloat(priceElement.textContent.replace(/[^0-9\.]/g, ''));
         }
 
-        // 获取商家名称
         const sellerElement = document.querySelector('.name_left .name');
         if (sellerElement) {
             seller = sellerElement.textContent.trim();
         }
 
-        // 获取拿货点信息 - 修改为遍历查找
         const siteRightDivs = document.querySelectorAll('.site_right div');
         siteRightDivs.forEach(div => {
             if (div.textContent.includes("拿货点")) {
@@ -68,32 +75,46 @@
             }
         });
 
-        // 提取图片 URL
         const productImages = document.querySelectorAll('.tb-thumb img');
-        imageUrls = Array.from(productImages).map(img => img.getAttribute('big')); //图片链接类型有3中, src, mid, big, 需要的是big链接
+        imageUrls = Array.from(productImages)
+            .map(img => {
+            const url = img.getAttribute('big');
+            return url ? url.replace(/^http:\/\//i, 'https://') : null; // 将 HTTP 转换为 HTTPS
+        })
+            .filter(url => url !== null); //访问一个 HTTPS 页面，但页面中的图片资源却使用的是 HTTP 协议。浏览器出于安全考虑，会阻止这种混合内容的加载
+
 
         sourceUrl = window.location.href;
 
-        // 检查是否成功获取数据
         if (!title || isNaN(price) || !sourceUrl || !seller || !pickupPoint || imageUrls.length === 0) {
             alert('未能成功获取商品信息，请检查页面结构。');
             return;
         }
 
-        // 上传图片到 sm.ms 并获取链接
-        const uploadedImageUrls = await uploadImagesToImgbb(imageUrls);
+        const isDuplicate = await checkDuplicateTitle(title);
+        if (isDuplicate) {
+            alert('该商品已存在于 Airtable 中！');
+            return;
+        }
 
-        // 构建数据对象
+        const uploadedImageUrls = await uploadImagesToImgbb(imageUrls);
         const productData = {
             '商品标题': title,
+            '类型': type,
             '拿货价': price,
             '来源': sourceUrl,
             '商家': seller,
             '拿货点': pickupPoint,
-            '商品图片': uploadedImageUrls.map(url => ({ url })) // 将 URL 转换为 Attachment 对象数组
+            '商品图片': uploadedImageUrls.map(url => ({ url })),
+            '记录时间': recordTime
         };
 
-        // 上传数据到 Airtable
+        // 再次检查 isDuplicate，确保上传前的验证
+        if (await checkDuplicateTitle(title)) {
+            alert('该商品已存在于 Airtable 中！');
+            return;
+        }
+
         const uploadSuccess = await uploadDataToAirtable(productData);
         if (uploadSuccess) {
             alert('商品信息成功上传到 Airtable！');
@@ -102,7 +123,33 @@
         }
     });
 
-    // 使用 Promise.all 并行上传图片到 imgbb
+    async function checkDuplicateTitle(title) {
+        try {
+            // 编码后的 Airtable 查询公式
+            const formula = `({商品标题} = "${title.replace(/"/g, '\\"')}")`;
+            const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=${encodeURIComponent(formula)}`;
+
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${ACCESS_TOKEN}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return data.records.length > 0; // 如果找到重复记录，返回 true
+            } else {
+                console.error('检查重复数据失败:', response.statusText);
+                return false;
+            }
+        } catch (error) {
+            console.error('检查重复数据失败:', error);
+            return false;
+        }
+    }
+
     async function uploadImagesToImgbb(imageUrls) {
         const uploadedImageUrls = await Promise.all(imageUrls.map(async imageUrl => {
             try {
@@ -134,14 +181,11 @@
 
                     const data = JSON.parse(uploadResponse.responseText);
                     if (data.success) {
-                        const uploadedImageUrl = data.data.url;
-                        console.log('Imgbb 图片 URL:', uploadedImageUrl);
-                        return uploadedImageUrl;
+                        return data.data.url;
                     } else {
-                        console.error('上传失败:', data.error.message); //  imgbb 返回的错误信息在 error 对象中
-                        return null; // 返回 null 表示上传失败
+                        console.error('上传失败:', data.error.message);
+                        return null;
                     }
-
                 } else {
                     console.error('获取图片失败:', response.statusText);
                     return null;
@@ -152,10 +196,9 @@
             }
         }));
 
-        return uploadedImageUrls.filter(url => !!url); // 过滤掉空值 (null)
+        return uploadedImageUrls.filter(url => !!url);
     }
 
-    // 上传数据到 Airtable
     async function uploadDataToAirtable(productData) {
         try {
             const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`, {
@@ -172,10 +215,10 @@
             if (response.ok) {
                 const data = await response.json();
                 console.log('Data uploaded to Airtable:', data);
-                return true; // 上传成功
+                return true;
             } else {
-                console.error('Error uploading data to Airtable:', response.status);
-                return false; // 上传失败
+                console.error('Error uploading data to Airtable:', response.statusText);
+                return false;
             }
         } catch (error) {
             console.error('Error uploading data to Airtable:', error);
