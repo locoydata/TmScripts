@@ -2,9 +2,16 @@
 // @name         开新有货源
 // @namespace    http://tampermonkey.net/
 // @version      1.3
-// @description  采集商品信息并上传到 Airtable，防止重复上传
-// @author       [你的名字]
-// @match        *://*/*
+// @description  采集商品信息并上传到 Airtable，防止重复上传, 支持北京聚源百成网络科技站点
+// @author       [思钱想厚]
+// @match        *://www.k3.cn/*
+// @match        *://www.2tong.cn/*
+// @match        *://www.yoduo.com/*
+// @match        *://xy.k3.cn/*
+// @match        *://www.bao66.cn/*
+// @match        *://www.xingfujie.cn/*
+// @match        *://www.juyi5.cn/*
+
 // @grant        GM_xmlhttpRequest
 // ==/UserScript==
 
