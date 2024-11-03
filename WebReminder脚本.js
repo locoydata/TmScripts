@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         WebReminder
 // @namespace    http://tampermonkey.net/
-// @version      2.9
-// @description  根据 Airtable 数据在指定网站上显示浮动提醒，支持按钮点击显示信息框
+// @version      3.0
+// @description  根据 Airtable 数据在指定网站上显示浮动提醒，支持按钮点击显示信息框，并提供删除提醒功能
 // @author       [思钱想厚]
 // @match        *://*/*
 // @exclude      *://*.airtable.com/*  // 排除页面
@@ -10,7 +10,7 @@
 // @updateURL    https://locoydata.github.io/TmScripts/WebReminder脚本.js
 // @downloadURL  https://locoydata.github.io/TmScripts/WebReminder脚本.js
 // ==/UserScript==
-// 油猴浏览器扩展自动更新逻辑为  比对版本号确认是否更新, 修改脚本后需修改版本号
+
 (function () {
     'use strict';
 
@@ -46,62 +46,63 @@
     }
 
     // 2. 创建按钮和信息框
-    function createFloatingButton(content, hasAlert) { // 创建一个固定位置的 div 元素，作为浮动按钮
-        const buttonDiv = document.createElement("button");; // 设置按钮的位置为固定定位，距离页面顶部 20 像素，左侧对齐
+    function createFloatingButton(records) {
+        const hasAlert = records.length > 0; // 判断是否有提醒内容
+        const buttonDiv = document.createElement("button");
         buttonDiv.style.position = "fixed";
         buttonDiv.style.top = "20px";
         buttonDiv.style.left = "0";
-        buttonDiv.style.backgroundColor = hasAlert ? "#F03E17" : "#007BFF"; // 根据是否有提醒内容设置背景色
-        buttonDiv.style.color = "#fff"; // 设置按钮文本颜色
-        buttonDiv.style.border = "0px solid #333"; // 设置边框样式，颜色为黑色
-        buttonDiv.style.borderRadius = "0 5px 5px 0"; // 设置圆角边框
-        buttonDiv.style.width = "30px"; // 初始宽度 // 设置按钮的初始宽度为 30 像素
-        buttonDiv.style.height = "100px"; // 这里设置为你希望的高度，例如 50px
-        buttonDiv.style.cursor = "pointer"; // 设置鼠标悬停时的指针样式为手型，表示该元素可点击
-        buttonDiv.style.zIndex = "9999"; // 设置 z-index，确保该按钮在页面的最上层
-        buttonDiv.style.display = "flex"; // 设置按钮为 flex 布局，便于内容居中
-        buttonDiv.style.alignItems = "center"; // 设置 flex 布局的子元素在垂直方向上居中对齐
-        buttonDiv.style.justifyContent = "center"; // 设置 flex 布局的子元素在水平方向上居中对齐
-        buttonDiv.style.writingMode = "vertical-rl"; // 设置按钮的文字书写模式为垂直从右到左
-        buttonDiv.style.textOrientation = "upright"; // 设置文字方向为直立
-        buttonDiv.innerText = hasAlert ? "有提醒" : "无提醒"; // 根据是否有提醒内容设置按钮的显示文本
+        buttonDiv.style.backgroundColor = hasAlert ? "#F03E17" : "#007BFF";
+        buttonDiv.style.color = "#fff";
+        buttonDiv.style.border = "0";
+        buttonDiv.style.borderRadius = "0 5px 5px 0";
+        buttonDiv.style.width = "30px";
+        buttonDiv.style.height = "100px";
+        buttonDiv.style.cursor = "pointer";
+        buttonDiv.style.zIndex = "9999";
+        buttonDiv.style.display = "flex";
+        buttonDiv.style.alignItems = "center";
+        buttonDiv.style.justifyContent = "center";
+        buttonDiv.style.writingMode = "vertical-rl";
+        buttonDiv.style.textOrientation = "upright";
+        buttonDiv.innerText = hasAlert ? "有提醒" : "无提醒";
 
         // 创建信息框
         const alertBox = document.createElement("div");
         alertBox.style.position = "fixed";
-        alertBox.style.top = "50%"; // 中间位置
-        alertBox.style.left = "50%"; // 中间位置
-        alertBox.style.transform = "translate(-50%, -50%)"; // 重新设置居中
+        alertBox.style.top = "50%";
+        alertBox.style.left = "50%";
+        alertBox.style.transform = "translate(-50%, -50%)";
         alertBox.style.backgroundColor = "rgba(255, 255, 255, 0.9)";
         alertBox.style.color = "#333";
         alertBox.style.border = "1px solid #333";
         alertBox.style.borderRadius = "5px";
-        alertBox.style.width = "500px"; // 固定宽度
-        alertBox.style.maxHeight = "400px"; // 最大高度
-        alertBox.style.height = "300px"; // 固定高度 ****这里设置信息框高度****,  需在以下***2***处也修改像素为当前固定高度, 例如 改为 contentArea.style.height = "calc(400px - 40px)";
+        alertBox.style.width = "500px";
+        alertBox.style.maxHeight = "400px";
+        alertBox.style.height = "300px";
         alertBox.style.zIndex = "10000";
-        alertBox.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)"; // 添加阴影效果
+        alertBox.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
+        alertBox.style.display = "none"; // 初始时隐藏信息框
 
         // 创建标题栏
         const titleBar = document.createElement("div");
         titleBar.style.display = "flex";
-        titleBar.style.justifyContent = "space-between"; // 左右对齐
-        titleBar.style.alignItems = "center"; // 垂直居中
-        titleBar.style.padding = "5px"; // 内边距
-        titleBar.style.borderBottom = "1px solid #333"; // 底部边框
-        titleBar.style.backgroundColor = "rgba(240, 240, 240, 0.8)"; // 背景色
+        titleBar.style.justifyContent = "space-between";
+        titleBar.style.alignItems = "center";
+        titleBar.style.padding = "5px";
+        titleBar.style.borderBottom = "1px solid #333";
+        titleBar.style.backgroundColor = "rgba(240, 240, 240, 0.8)";
 
-        // 添加最大化按钮 - 新标签页显示内容
+        // 添加最大化按钮
         const maximizeButton = document.createElement("button");
-        maximizeButton.innerText = "🗖"; // 最大化符号
+        maximizeButton.innerText = "🗖";
         maximizeButton.style.cursor = "pointer";
         maximizeButton.style.fontSize = "20px";
-        maximizeButton.style.border = "none"; // 移除边框
-        maximizeButton.style.backgroundColor = "transparent"; // 背景透明
-        maximizeButton.style.color = "#333"; // 最大化按钮颜色
-        maximizeButton.style.padding = "0"; // 不添加内边距
+        maximizeButton.style.border = "none";
+        maximizeButton.style.backgroundColor = "transparent";
+        maximizeButton.style.color = "#333";
+        maximizeButton.style.padding = "0";
         maximizeButton.onclick = function () {
-            // 在新标签页中显示内容
             const newTab = window.open();
             newTab.document.body.innerHTML = `
                 <html>
@@ -122,7 +123,7 @@
                 </head>
                 <body>
                     <h1>提醒内容</h1>
-                    <div>${content.split('\n').map((line, index) => `${index + 1}. ${line}`).join('<br><br>')}</div>
+                    <div>${records.map(record => `${record.fields["提醒内容"]}`).join('<br><br>')}</div>
                 </body>
                 </html>
             `;
@@ -130,15 +131,15 @@
 
         // 添加关闭按钮
         const closeButton = document.createElement("button");
-        closeButton.innerText = "×"; // 关闭符号
+        closeButton.innerText = "×";
         closeButton.style.cursor = "pointer";
         closeButton.style.fontSize = "20px";
-        closeButton.style.border = "none"; // 移除边框
-        closeButton.style.backgroundColor = "transparent"; // 背景透明
-        closeButton.style.color = "#333"; // 关闭按钮颜色
-        closeButton.style.padding = "0"; // 不添加内边距
+        closeButton.style.border = "none";
+        closeButton.style.backgroundColor = "transparent";
+        closeButton.style.color = "#333";
+        closeButton.style.padding = "0";
         closeButton.onclick = function () {
-            alertBox.style.display = "none"; // 点击关闭时隐藏信息框
+            alertBox.style.display = "none";
         };
 
         titleBar.appendChild(maximizeButton);
@@ -147,13 +148,10 @@
 
         // 内容区域
         const contentArea = document.createElement("div");
-        contentArea.style.padding = "10px"; // 内容内边距
-        contentArea.style.overflowY = "auto"; // 超出部分允许滚动
-        contentArea.style.height = "calc(300px - 40px)"; // 固定高度，减去标题栏高度  ***2***
+        contentArea.style.padding = "10px";
+        contentArea.style.overflowY = "auto";
+        contentArea.style.height = "calc(300px - 40px)"; // 高度减去标题栏高度
         alertBox.appendChild(contentArea);
-
-        // 初始时隐藏信息框
-        alertBox.style.display = "none";
 
         // 点击按钮时显示/隐藏信息框
         buttonDiv.onclick = function () {
@@ -161,51 +159,71 @@
                 alertBox.style.display = "none"; // 如果信息框已经显示，则隐藏
             } else {
                 contentArea.innerHTML = ""; // 清空内容
-                const contentLines = content.split('\n'); // 分割成行
-                contentLines.forEach((line, index) => {
+                records.forEach((record) => {
                     const lineElement = document.createElement("div");
-                    lineElement.innerText = `${index + 1}. ${line}`; // 添加序号
-                    contentArea.appendChild(lineElement); // 添加到内容区域中
+                    lineElement.innerText = `${record.fields["提醒内容"]}`; // 直接显示提醒内容
 
-                    const spaceDiv = document.createElement("div"); // 创建一个空的 div
-                    //spaceDiv.innerHTML = "&nbsp;"; // 设置空白内容, 为一行高度, 可使用下面像素精细控制
-                    spaceDiv.style.height = "10px"; // 设置空行的高度
-                    contentArea.appendChild(spaceDiv); // 添加到内容区域中，作为空行
+                    // 创建删除按钮
+                    const deleteButton = document.createElement("button");
+                    deleteButton.innerText = "删除"; // 删除按钮文字
+                    deleteButton.style.marginLeft = "10px"; // 按钮间隔
+                    deleteButton.style.cursor = "pointer";
+                    deleteButton.onclick = function (event) {
+                        event.stopPropagation(); // 防止触发点击事件
+                        deleteRecord(record.id); // 删除记录
+                        lineElement.remove(); // 从信息框中移除该行
+                    };
+
+                    lineElement.appendChild(deleteButton); // 将删除按钮添加到行内容中
+                    contentArea.appendChild(lineElement); // 添加到内容区域中
                 });
                 alertBox.style.display = "block"; // 显示信息框
             }
         };
 
-        document.body.appendChild(buttonDiv);
+        // 将信息框添加到页面（初始时不显示）
         document.body.appendChild(alertBox);
+        document.body.appendChild(buttonDiv); // 始终添加按钮
     }
 
-    // 3. 检查当前网址并显示所有匹配的提醒内容
-    function checkAndDisplayAlerts(records) {
-        const currentUrl = window.location.href;
-        let alertsToShow = [];
+    // 3. 删除 Airtable 中的记录
+    function deleteRecord(recordId) {
+        const url = `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE_NAME)}/${recordId}`;
 
-        records.forEach(record => {
-            const matchUrl = record.fields["匹配网址"];
-            const alertContent = record.fields["提醒内容"];
-
-            // 检查当前网址是否包含表中的“匹配网址”
-            if (matchUrl && currentUrl.includes(matchUrl)) {
-                alertsToShow.push(alertContent);  // 收集所有匹配的提醒内容
+        GM_xmlhttpRequest({
+            method: "DELETE",
+            url: url,
+            headers: {
+                'Authorization': `Bearer ${ACCESS_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            onload: function (response) {
+                if (response.status === 200) {
+                    console.log(`Record ${recordId} deleted successfully.`);
+                } else {
+                    console.error("Failed to delete record:", response.statusText);
+                }
+            },
+            onerror: function () {
+                console.error("Request error while deleting record");
             }
         });
-
-        // 如果有多个提醒内容，拼接在一起显示；否则显示“无提醒”
-        const content = alertsToShow.length > 0 ? alertsToShow.join('\n') : "";
-        createFloatingButton(content, alertsToShow.length > 0);
     }
 
-    // 4. 主流程 - 获取数据并执行匹配检查
-    fetchData()
-        .then(records => {
-            checkAndDisplayAlerts(records);
-        })
-        .catch(error => {
-            console.error(error);
+    // 4. 检查当前网址并显示所有匹配的提醒内容
+    function checkAndDisplayAlerts(records) {
+        const currentUrl = window.location.href;
+
+        const matchingRecords = records.filter(record => {
+            const matchUrl = record.fields["匹配网址"];
+            return matchUrl && currentUrl.includes(matchUrl); // 只返回匹配的记录
         });
+
+        createFloatingButton(matchingRecords); // 创建按钮和信息框
+    }
+
+    // 启动脚本
+    fetchData()
+        .then(checkAndDisplayAlerts)
+        .catch(error => console.error("Error:", error));
 })();
