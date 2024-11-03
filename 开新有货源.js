@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         采集商品信息并上传到 Airtable (通用版)
+// @name         采集开新有商品信息并上传到 Airtable (通用版)
 // @namespace    http://tampermonkey.net/
 // @version      1.1
 // @description  一键采集商品信息（标题和拿货价）并上传到 Airtable（通用版）
@@ -15,7 +15,7 @@
     const ACCESS_TOKEN = 'patbkrCcuDhqSEPik.f9945b399f40ab7dbeff15e8b436b8fa47de166bab355e6209c51c86106b4549'; // Airtable API 访问令牌
     const BASE_ID = 'appuciOCDpoyVJCHB'; // Base ID
     const TABLE_NAME = '开新有'; // Airtable 表格名称
-    const apiToken = 'JW5zs1p3Fqee4ieIiZBB6ylU5mnMU02l'; // Sm.ms API Token
+    const IMGBB_API_KEY = '871a92f8b305b46b8fc884b518dbf717'; //  替换为你的 imgbb API key
 
     // 创建悬浮按钮
     const button = document.createElement('button');
@@ -81,7 +81,7 @@
         }
 
         // 上传图片到 sm.ms 并获取链接
-        const uploadedImageUrls = await uploadImagesToSmMs(imageUrls);
+        const uploadedImageUrls = await uploadImagesToImgbb(imageUrls);
 
         // 构建数据对象
         const productData = {
@@ -102,11 +102,10 @@
         }
     });
 
-    // 使用 Promise.all 并行上传图片
-    async function uploadImagesToSmMs(imageUrls) {
+    // 使用 Promise.all 并行上传图片到 imgbb
+    async function uploadImagesToImgbb(imageUrls) {
         const uploadedImageUrls = await Promise.all(imageUrls.map(async imageUrl => {
             try {
-                // 获取图片数据
                 const response = await new Promise((resolve, reject) => {
                     GM_xmlhttpRequest({
                         method: 'GET',
@@ -120,14 +119,13 @@
                 if (response.status === 200) {
                     const file = new File([response.response], 'image.png', { type: response.response.type || 'image/png' });
                     const formData = new FormData();
-                    formData.append('smfile', file);
-                    formData.append('token', apiToken); // 添加 API Token
+                    formData.append('image', file);
+                    formData.append('key', IMGBB_API_KEY);
 
-                    // 上传图片到 Sm.ms
                     const uploadResponse = await new Promise((resolve, reject) => {
                         GM_xmlhttpRequest({
                             method: 'POST',
-                            url: 'https://sm.ms/api/v2/upload',
+                            url: 'https://api.imgbb.com/1/upload',
                             data: formData,
                             onload: resolve,
                             onerror: reject,
@@ -137,20 +135,24 @@
                     const data = JSON.parse(uploadResponse.responseText);
                     if (data.success) {
                         const uploadedImageUrl = data.data.url;
-                        console.log('Sm.ms 图片 URL:', uploadedImageUrl);
-                        return uploadedImageUrl; // 将成功上传的链接返回
+                        console.log('Imgbb 图片 URL:', uploadedImageUrl);
+                        return uploadedImageUrl;
                     } else {
-                        console.error('上传失败:', data.message);
+                        console.error('上传失败:', data.error.message); //  imgbb 返回的错误信息在 error 对象中
+                        return null; // 返回 null 表示上传失败
                     }
+
                 } else {
                     console.error('获取图片失败:', response.statusText);
+                    return null;
                 }
             } catch (error) {
                 console.error('处理图片时出错:', error);
+                return null;
             }
         }));
 
-        return uploadedImageUrls.filter(url => !!url); // 过滤掉空值
+        return uploadedImageUrls.filter(url => !!url); // 过滤掉空值 (null)
     }
 
     // 上传数据到 Airtable
