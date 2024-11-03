@@ -3,12 +3,14 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.1
 // @description  选择表并向 Airtable 添加记录
-// @match        *://*/*
-// @exclude      *://work.1688.com/*  // 排除页面
+// @author       [思钱想厚]
+// @match        *://erp2.cnfth.com/*
+// @match        *://*.1688.com*
 // @exclude      *://airtable.com/*  // 排除页面
 // @grant        none
 // @updateURL    https://locoydata.github.io/TmScripts/添加记录脚本.js
 // @downloadURL  https://locoydata.github.io/TmScripts/添加记录脚本.js
+
 // ==/UserScript==
 // 油猴浏览器扩展自动更新逻辑为  比对版本号确认是否更新, 修改脚本后需修改版本号
 (async function() {

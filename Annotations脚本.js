@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         Annotations
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  在网页中直接显示注释并高亮文本
-// @match        *://*/*
-// @exclude      *://*.example.com/login*  // 排除所有 login 页面
+// @author       [思钱想厚]
+// @match        *://erp2.cnfth.com/*
+// @match        *://*.1688.com*
 // @exclude      *://airtable.com/*  // 排除页面
 // @grant        none
 // @updateURL    https://locoydata.github.io/TmScripts/Annotations脚本.js

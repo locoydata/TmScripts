@@ -3,7 +3,9 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.2
 // @description  Highlights text on pages matching Airtable data
-// @match        *://*/*
+// @author       [思钱想厚]
+// @match        *://erp2.cnfth.com/*
+// @match        *://*.1688.com*
 // @exclude      *://airtable.com/*  // 排除页面
 // @grant        none
 // @updateURL    https://locoydata.github.io/TmScripts/Highlighter脚本.js

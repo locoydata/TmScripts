@@ -13,6 +13,8 @@
 // @match        *://www.juyi5.cn/*
 
 // @grant        GM_xmlhttpRequest
+// @updateURL    https://locoydata.github.io/TmScripts/开新有货源.js
+// @downloadURL  https://locoydata.github.io/TmScripts/开新有货源.js
 // ==/UserScript==
 
 (function() {

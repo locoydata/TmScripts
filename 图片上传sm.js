@@ -3,7 +3,7 @@
 // @namespace    https://github.com/your-username
 // @version      1.0
 // @description  图片上传到Sm.ms图床
-// @author       Your Name
+// @author       [思钱想厚]
 // @match        *://*/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_addStyle

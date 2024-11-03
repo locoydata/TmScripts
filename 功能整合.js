@@ -3,6 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.1
 // @description  整合多个油猴脚本的框架，包含浮动按钮和弹出菜单
+// @author       [思钱想厚]
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
 // @grant        GM_setValue
