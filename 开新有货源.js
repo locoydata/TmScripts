@@ -70,7 +70,7 @@
 
         // 提取图片 URL
         const productImages = document.querySelectorAll('.tb-thumb img');
-        imageUrls = Array.from(productImages).map(img => img.src);
+        imageUrls = Array.from(productImages).map(img => img.getAttribute('big')); //图片链接类型有3中, src, mid, big, 需要的是big链接
 
         sourceUrl = window.location.href;
 
