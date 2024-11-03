@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         添加记录
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  选择表并向 Airtable 添加记录
 // @author       [思钱想厚]
 // @match        *://erp2.cnfth.com/*

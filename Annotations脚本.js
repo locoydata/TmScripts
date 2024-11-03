@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Annotations
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.4
 // @description  在网页中直接显示注释并高亮文本
 // @author       [思钱想厚]
 // @match        *://erp2.cnfth.com/*
