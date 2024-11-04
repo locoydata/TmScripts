@@ -187,15 +187,15 @@ function updateFields() {
     fieldsContainer.innerHTML = fields.map(field => {
         let inputElement = '';
 
-        // 检查字段名是否在必填字段列表中，若在则标记为必填
-        const isRequired = requiredFields.includes(field.name);
+        // 检查字段是否为必填字段
+        const isRequired = requiredFields.includes(field.name); // 直接匹配字段名
 
         // 根据字段类型创建不同的输入框元素
         if (field.name === '来源') {
             inputElement = `<input type="text" id="${field.name}" value="${sourceUrl}" ${isRequired ? 'required' : ''} style="flex: 1; margin-left: 10px;" />`;
         } else if (field.name === '记录时间') {
             inputElement = `<input type="text" id="${field.name}" value="${currentTime}" ${isRequired ? 'required' : ''} style="flex: 1; margin-left: 10px;" />`;
-        } else if (field.type === 'singleSelect' && field.options && field.options.choices) {
+        } else if (field.type === 'singleSelect' && field.options && field.options.choices) {  // <option value="${choice.id}">${choice.name}</option>`)也可以通过api上传数据🚨🚨
             // 为 singleSelect 类型字段生成下拉选择框
             inputElement = `
                 <select id="${field.name}" ${isRequired ? 'required' : ''} style="flex: 1; margin-left: 10px;">
@@ -208,14 +208,19 @@ function updateFields() {
             inputElement = `<input type="${field.type === 'multilineText' ? 'textarea' : 'text'}" id="${field.name}" ${isRequired ? 'required' : ''} style="flex: 1; margin-left: 10px;" />`;
         }
 
+        // 在必填字段名后添加 "(必填)" 标识
+        const label = isRequired ? `${field.name} (必填):` : `${field.name}:`;
+
         return `
             <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                <label style="flex: 0 0 100px;">${field.name}:</label>
+                <label style="flex: 0 0 100px;">${label}</label>
                 ${inputElement}
             </div>
         `;
     }).join('');
 }
+
+
 
 
 
