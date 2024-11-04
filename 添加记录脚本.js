@@ -18,7 +18,8 @@
     const ACCESS_TOKEN = 'patbkrCcuDhqSEPik.f9945b399f40ab7dbeff15e8b436b8fa47de166bab355e6209c51c86106b4549'; // Airtable API 访问令牌
     const BASES = {
         'Annotations': 'appWNNByUsenTcJML', // Base ID 1
-        'WebReminder': 'appe3cvzz8IDpyNRq', // Base ID 2（请替换为你的第二个 Base ID）
+        'WebReminder': 'appe3cvzz8IDpyNRq', // Base ID 2
+        'Highlighter': 'appfvvlcRZhbJhWA2',
     };
 
     // 动态获取表名和字段名
@@ -98,47 +99,45 @@
     });
 
     // 处理表单提交
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault();
+form.addEventListener('submit', async (event) => {
+    event.preventDefault();
 
-        const tableName = document.getElementById('tableSelect').value;
-        const fields = currentTables.find(table => table.name === tableName).fields;
+    const tableName = document.getElementById('tableSelect').value;
+    const fields = currentTables.find(table => table.name === tableName).fields;
 
-        const recordData = {};
-        fields.forEach(field => {
-            const input = document.getElementById(field.name);
-            if (input) {
-                recordData[field.name] = input.value;
-            }
-        });
-
-        const sourceUrl = window.location.href; // 获取当前页面的网址
-        recordData['来源'] = sourceUrl; // 自动填入当前页面的网址
-        recordData['记录时间'] = new Date().toISOString(); // 如果只需要日期部分; new Date().toISOString(); // 将当前时间转换为 ISO 字符串, 包含时间, 这是airtable中对应列类型为日期并需要include time
-
-        // 调用 Airtable API 添加记录
-        try {
-            const response = await fetch(`https://api.airtable.com/v0/${currentBaseId}/${tableName}`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${ACCESS_TOKEN}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ fields: recordData })
-            });
-
-            if (!response.ok) {
-                throw new Error(`提交到表 ${tableName} 失败`);
-            }
-
-            alert(`记录成功添加到表 ${tableName}`);
-            modal.style.display = 'none';
-            form.reset(); // 重置表单
-        } catch (error) {
-            console.error('提交记录失败:', error);
-            alert('记录添加失败，请检查控制台错误信息');
+    const recordData = {};
+    fields.forEach(field => {
+        const input = document.getElementById(field.name);
+        if (input && input.value) { // 仅在值不为空时添加字段
+            recordData[field.name] = input.value;
         }
     });
+
+
+    // 调用 Airtable API 添加记录
+    try {
+        const response = await fetch(`https://api.airtable.com/v0/${currentBaseId}/${tableName}`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${ACCESS_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ fields: recordData })
+        });
+
+        if (!response.ok) {
+            throw new Error(`提交到表 ${tableName} 失败`);
+        }
+
+        alert(`记录成功添加到表 ${tableName}`);
+        modal.style.display = 'none';
+        form.reset(); // 重置表单
+    } catch (error) {
+        console.error('提交记录失败:', error);
+        alert('记录添加失败，请检查控制台错误信息');
+    }
+});
+
 
     // 从 Airtable 获取表和字段
     async function fetchTables(baseId) {
@@ -176,33 +175,51 @@
     }
 
     // 更新字段动态显示
-    function updateFields() {
-        const tableName = document.getElementById('tableSelect').value;
-        const fieldsContainer = document.getElementById('fieldsContainer');
-        const fields = currentTables.find(table => table.name === tableName).fields;
+function updateFields() {
+    const requiredFields = ["匹配文本", "注释内容", "高亮文本"]; // 必填字段名称列表
+    const tableName = document.getElementById('tableSelect').value;
+    const fieldsContainer = document.getElementById('fieldsContainer');
+    const fields = currentTables.find(table => table.name === tableName).fields;
 
-        // 获取当前页面的网址和当前时间
-        const sourceUrl = window.location.href;
-        const currentTime =new Date().toISOString(); // 如果只需要日期部分; new Date().toISOString(); // 将当前时间转换为 ISO 字符串, 包含时间, 这是airtable中对应列类型为日期并需要include time
+    const sourceUrl = window.location.href;
+    const currentTime = new Date().toISOString();
 
-        // 生成字段的 HTML，包括 来源 和 记录时间 字段
-        fieldsContainer.innerHTML = fields.map(field => {
-            // 检查字段名是否是 来源 或 记录时间
-            let inputValue = '';
-            if (field.name === '来源') {
-                inputValue = sourceUrl; // 设置 来源 的默认值
-            } else if (field.name === '记录时间') {
-                inputValue = currentTime; // 设置 记录时间 的默认值
-            }
+    fieldsContainer.innerHTML = fields.map(field => {
+        let inputElement = '';
 
-            return `
+        // 检查字段名是否在必填字段列表中，若在则标记为必填
+        const isRequired = requiredFields.includes(field.name);
+
+        // 根据字段类型创建不同的输入框元素
+        if (field.name === '来源') {
+            inputElement = `<input type="text" id="${field.name}" value="${sourceUrl}" ${isRequired ? 'required' : ''} style="flex: 1; margin-left: 10px;" />`;
+        } else if (field.name === '记录时间') {
+            inputElement = `<input type="text" id="${field.name}" value="${currentTime}" ${isRequired ? 'required' : ''} style="flex: 1; margin-left: 10px;" />`;
+        } else if (field.type === 'singleSelect' && field.options && field.options.choices) {
+            // 为 singleSelect 类型字段生成下拉选择框
+            inputElement = `
+                <select id="${field.name}" ${isRequired ? 'required' : ''} style="flex: 1; margin-left: 10px;">
+                    <option value="">请选择</option>
+                    ${field.options.choices.map(choice => `<option value="${choice.name}">${choice.name}</option>`).join('')}
+                </select>
+            `;
+        } else {
+            // 其他字段类型使用文本输入框
+            inputElement = `<input type="${field.type === 'multilineText' ? 'textarea' : 'text'}" id="${field.name}" ${isRequired ? 'required' : ''} style="flex: 1; margin-left: 10px;" />`;
+        }
+
+        return `
             <div style="display: flex; align-items: center; margin-bottom: 10px;">
                 <label style="flex: 0 0 100px;">${field.name}:</label>
-                <input type="${field.type === 'multilineText' ? 'textarea' : 'text'}" id="${field.name}" value="${inputValue}" required style="flex: 1; margin-left: 10px;" />
+                ${inputElement}
             </div>
         `;
-        }).join('');
-    }
+    }).join('');
+}
+
+
+
+
 
     // 监听数据库选择的变化
     document.getElementById('baseSelect').addEventListener('change', updateTables);
