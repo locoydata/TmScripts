@@ -210,10 +210,11 @@ function updateFields() {
 
         // 在必填字段名后添加 "(必填)" 标识
         const label = isRequired ? `${field.name} (必填):` : `${field.name}:`;
-
+        
+        // 修改<label style="flex: 0 0 150px;">调整模态框中字段名的宽度
         return `
             <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                <label style="flex: 0 0 100px;">${label}</label>
+                <label style="flex: 0 0 120px;">${label}</label>
                 ${inputElement}
             </div>
         `;
