@@ -5,7 +5,7 @@
 // @description  选择数据库和表并向 Airtable 添加记录
 // @author       [思钱想厚]
 // @match        ://erp2.cnfth.com/
-// @match        ://.1688.com*
+// @match        ://*.1688.com/*
 // @exclude      ://airtable.com/  // 排除页面
 // @grant        none
 // @updateURL    https://locoydata.github.io/TmScripts/添加记录脚本.js
@@ -20,6 +20,7 @@
         'Annotations': 'appWNNByUsenTcJML', // Base ID 1
         'WebReminder': 'appe3cvzz8IDpyNRq', // Base ID 2
         'Highlighter': 'appfvvlcRZhbJhWA2',
+        'ae半托供应链': 'appg0WaUPMbz68tVM',
     };
 
     // 动态获取表名和字段名
@@ -99,44 +100,53 @@
     });
 
     // 处理表单提交
-form.addEventListener('submit', async (event) => {
-    event.preventDefault();
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
 
-    const tableName = document.getElementById('tableSelect').value;
-    const fields = currentTables.find(table => table.name === tableName).fields;
+        const tableName = document.getElementById('tableSelect').value;
+        const fields = currentTables.find(table => table.name === tableName).fields;
 
-    const recordData = {};
-    fields.forEach(field => {
-        const input = document.getElementById(field.name);
-        if (input && input.value) { // 仅在值不为空时添加字段
-            recordData[field.name] = input.value;
-        }
-    });
+        const recordData = {};
+        fields.forEach(field => {
+            const input = document.getElementById(field.name);
+            if (input) { // 检查输入框是否存在
+                let value = input.value;
 
+                // 检查字段类型，处理数字字段
+                if (field.type === 'number') {
+                    value = Number(value); // 转换为数字类型
+                }
 
-    // 调用 Airtable API 添加记录
-    try {
-        const response = await fetch(`https://api.airtable.com/v0/${currentBaseId}/${tableName}`, {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${ACCESS_TOKEN}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ fields: recordData })
+                if (value !== '' && value !== null) { // 仅在值不为空时添加字段
+                    recordData[field.name] = value;
+                }
+            }
         });
 
-        if (!response.ok) {
-            throw new Error(`提交到表 ${tableName} 失败`);
-        }
 
-        alert(`记录成功添加到表 ${tableName}`);
-        modal.style.display = 'none';
-        form.reset(); // 重置表单
-    } catch (error) {
-        console.error('提交记录失败:', error);
-        alert('记录添加失败，请检查控制台错误信息');
-    }
-});
+        // 调用 Airtable API 添加记录
+        try {
+            const response = await fetch(`https://api.airtable.com/v0/${currentBaseId}/${tableName}`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${ACCESS_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fields: recordData })
+            });
+
+            if (!response.ok) {
+                throw new Error(`提交到表 ${tableName} 失败`);
+            }
+
+            alert(`记录成功添加到表 ${tableName}`);
+            modal.style.display = 'none';
+            form.reset(); // 重置表单
+        } catch (error) {
+            console.error('提交记录失败:', error);
+            alert('记录添加失败，请检查控制台错误信息');
+        }
+    });
 
 
     // 从 Airtable 获取表和字段
@@ -175,56 +185,51 @@ form.addEventListener('submit', async (event) => {
     }
 
     // 更新字段动态显示
-function updateFields() {
-    const requiredFields = ["匹配文本", "注释内容", "高亮文本"]; // 必填字段名称列表
-    const tableName = document.getElementById('tableSelect').value;
-    const fieldsContainer = document.getElementById('fieldsContainer');
-    const fields = currentTables.find(table => table.name === tableName).fields;
+    function updateFields() {
+        const requiredFields = ["匹配文本", "注释内容", "高亮文本"]; // 必填字段名称列表
+        const tableName = document.getElementById('tableSelect').value;
+        const fieldsContainer = document.getElementById('fieldsContainer');
+        const fields = currentTables.find(table => table.name === tableName).fields;
 
-    const sourceUrl = window.location.href;
-    const currentTime = new Date().toISOString();
+        const sourceUrl = window.location.href;
+        const currentTime = new Date().toISOString();
 
-    fieldsContainer.innerHTML = fields.map(field => {
-        let inputElement = '';
+        fieldsContainer.innerHTML = fields.map(field => {
+            let inputElement = '';
 
-        // 检查字段是否为必填字段
-        const isRequired = requiredFields.includes(field.name); // 直接匹配字段名
+            // 检查字段是否为必填字段
+            const isRequired = requiredFields.includes(field.name); // 直接匹配字段名
 
-        // 根据字段类型创建不同的输入框元素
-        if (field.name === '来源') {
-            inputElement = `<input type="text" id="${field.name}" value="${sourceUrl}" ${isRequired ? 'required' : ''} style="flex: 1; margin-left: 10px;" />`;
-        } else if (field.name === '记录时间') {
-            inputElement = `<input type="text" id="${field.name}" value="${currentTime}" ${isRequired ? 'required' : ''} style="flex: 1; margin-left: 10px;" />`;
-        } else if (field.type === 'singleSelect' && field.options && field.options.choices) {  // <option value="${choice.id}">${choice.name}</option>`)也可以通过api上传数据🚨🚨
-            // 为 singleSelect 类型字段生成下拉选择框
-            inputElement = `
+            // 根据字段类型创建不同的输入框元素
+            if (field.name === '来源') {
+                inputElement = `<input type="text" id="${field.name}" value="${sourceUrl}" ${isRequired ? 'required' : ''} style="flex: 1; margin-left: 10px;" />`;
+            } else if (field.name === '记录时间') {
+                inputElement = `<input type="text" id="${field.name}" value="${currentTime}" ${isRequired ? 'required' : ''} style="flex: 1; margin-left: 10px;" />`;
+            } else if (field.type === 'singleSelect' && field.options && field.options.choices) { // <option value="${choice.id}">${choice.name}</option>`)也可以通过api上传数据🚨🚨
+                // 为 singleSelect 类型字段生成下拉选择框
+                inputElement = `
                 <select id="${field.name}" ${isRequired ? 'required' : ''} style="flex: 1; margin-left: 10px;">
                     <option value="">请选择</option>
                     ${field.options.choices.map(choice => `<option value="${choice.name}">${choice.name}</option>`).join('')}
                 </select>
             `;
-        } else {
-            // 其他字段类型使用文本输入框
-            inputElement = `<input type="${field.type === 'multilineText' ? 'textarea' : 'text'}" id="${field.name}" ${isRequired ? 'required' : ''} style="flex: 1; margin-left: 10px;" />`;
-        }
+            } else {
+                // 其他字段类型使用文本输入框
+                inputElement = `<input type="${field.type === 'multilineText' ? 'textarea' : 'text'}" id="${field.name}" ${isRequired ? 'required' : ''} style="flex: 1; margin-left: 10px;" />`;
+            }
 
-        // 在必填字段名后添加 "(必填)" 标识
-        const label = isRequired ? `${field.name} (必填):` : `${field.name}:`;
-        
-        // 修改<label style="flex: 0 0 150px;">调整模态框中字段名的宽度
-        return `
+            // 在必填字段名后添加 "(必填)" 标识
+            const label = isRequired ? `${field.name} (必填):` : `${field.name}:`;
+
+            // 修改<label style="flex: 0 0 150px;">调整模态框中字段名的宽度
+            return `
             <div style="display: flex; align-items: center; margin-bottom: 10px;">
                 <label style="flex: 0 0 120px;">${label}</label>
                 ${inputElement}
             </div>
         `;
-    }).join('');
-}
-
-
-
-
-
+        }).join('');
+    }
 
 
     // 监听数据库选择的变化
