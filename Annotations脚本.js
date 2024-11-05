@@ -1,56 +1,65 @@
 // ==UserScript==
 // @name         Annotations
 // @namespace    http://tampermonkey.net/
-// @version      1.4
+// @version      1.7
 // @description  在网页中直接显示注释并高亮文本
 // @author       [思钱想厚]
 // @match        *://erp2.cnfth.com/*
 // @match        *://*.1688.com*
 // @exclude      *://airtable.com/*  // 排除页面
-// @grant        none
-// @updateURL    https://locoydata.github.io/TmScripts/Annotations脚本.js
-// @downloadURL  https://locoydata.github.io/TmScripts/Annotations脚本.js
+// @grant        GM_xmlhttpRequest
+// @updateURL    https://locoydata.github.io/TmScripts/Annotations脚本.js // 更新你的实际地址
+// @downloadURL  https://locoydata.github.io/TmScripts/Annotations脚本.js // 更新你的实际地址
 // ==/UserScript==
-// 油猴浏览器扩展自动更新逻辑为  比对版本号确认是否更新, 修改脚本后需修改版本号
+
 (async function() {
     'use strict';
 
-    const ACCESS_TOKEN = 'patbkrCcuDhqSEPik.f9945b399f40ab7dbeff15e8b436b8fa47de166bab355e6209c51c86106b4549'; // 在此替换为你的个人访问令牌
-    const BASE_ID = 'appWNNByUsenTcJML'; // 在此替换为你的Base ID
-    const TABLE_NAMES = ['ae订单','供应商备注', 'SKU供应商', 'SKU采购链接', 'SKU备注', '1688订单物流', '多多订单物流', 'Warn']; // 所有表格的名称
-
+    const ACCESS_TOKEN = 'patbkrCcuDhqSEPik.f9945b399f40ab7dbeff15e8b436b8fa47de166bab355e6209c51c86106b4549'; // 你的访问令牌
+    const BASE_IDS = ['appWNNByUsenTcJML', 'appg0WaUPMbz68tVM']; // 你的数据库 ID
     const annotations = {};
 
-    // 加载多个表的注释内容
-    async function loadAnnotations() {
-        for (const tableName of TABLE_NAMES) {
-            try {
-                const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${tableName}`, {
-                    headers: {
-                        Authorization: `Bearer ${ACCESS_TOKEN}`, // 使用个人访问令牌
-                        'Content-Type': 'application/json'
-                    }
-                });
+    async function fetchData(url) {
+        return new Promise((resolve, reject) => {
+            GM_xmlhttpRequest({
+                method: "GET",
+                url: url,
+                headers: {
+                    Authorization: `Bearer ${ACCESS_TOKEN}`
+                },
+                onload: response => resolve(JSON.parse(response.responseText)),
+                onerror: reject
+            });
+        });
+    }
 
-                if (!response.ok) {
-                    throw new Error(`网络响应失败，表格：${tableName}`);
+    async function fetchTablesAndAnnotations(baseId) {
+        const tablesData = await fetchData(`https://api.airtable.com/v0/meta/bases/${baseId}/tables`);
+
+        for (const table of tablesData.tables) {
+            const tableName = table.name;
+            const primaryFieldId = table.primaryFieldId;
+
+            // 从 tablesData 中找到 primary field 的 name
+            const primaryFieldName = table.fields.find(field => field.id === primaryFieldId).name;
+
+
+            const recordsData = await fetchData(`https://api.airtable.com/v0/${baseId}/${tableName}`);
+
+            recordsData.records.forEach(record => {
+                const primaryFieldValue = record.fields[primaryFieldName];
+
+                const otherFieldsValues = Object.keys(record.fields)
+                .filter(field => field !== primaryFieldName)
+                .map(field => record.fields[field])
+                .filter(Boolean)
+                .join(' ');
+
+                if (!annotations[primaryFieldValue]) {
+                    annotations[primaryFieldValue] = [];
                 }
-
-                const data = await response.json();
-
-                data.records.forEach(record => {
-                    const key = record.fields['匹配文本'];  // 假设每个表格都有“匹配文本”和“注释内容”列
-                    const value = record.fields['注释内容'];
-                    if (!annotations[key]) {
-                        annotations[key] = [];
-                    }
-                    annotations[key].push(value);
-                });
-
-                console.log(`表 ${tableName} 的注释加载成功`, annotations);
-            } catch (error) {
-                console.error(`加载表 ${tableName} 的注释失败:`, error);
-            }
+                annotations[primaryFieldValue].push(otherFieldsValues);
+            });
         }
     }
 
@@ -84,23 +93,14 @@
                     annotationDiv.style.borderRadius = '3px';
 
                     // 存储所有匹配到的注释
-                    const allAnnotations = [];
-
-                    for (const [key, value] of Object.entries(annotations)) {
-                        const regex = new RegExp(key, 'g');
-                        if (regex.test(text) && !annotatedKeys.has(key)) {
-                            // 收集所有匹配到的注释
-                            allAnnotations.push(...value);
-                            annotatedKeys.add(key);
-                        }
-                    }
+                    const allAnnotations = annotations[key] || [];
 
                     // 如果存在匹配的注释
                     if (allAnnotations.length > 0) {
                         // 循环显示所有注释
                         allAnnotations.forEach((annotation, index) => {
                             const annotationSpan = document.createElement('span');
-                            annotationSpan.textContent = `${annotation}`;  //注释内容为 `${annotation}` , 可以为内容加括号`(${annotation})`等操作
+                            annotationSpan.textContent = `${annotation}`; //注释内容
                             annotationSpan.title = annotation;
                             annotationDiv.appendChild(annotationSpan);
 
@@ -112,8 +112,6 @@
                         // 将 div 元素插入到第一个匹配项所在 div 的下一级
                         parentDiv.parentNode.insertBefore(annotationDiv, parentDiv.nextSibling);
 
-                        // 修改为插入到父元素的最后
-                        //parentDiv.parentNode.appendChild(annotationDiv);
                         // 标记父节点已添加注释
                         parentDiv.dataset.annotated = 'true';
                     }
@@ -148,8 +146,10 @@
 
     // 页面加载时高亮并观察动态内容
     window.addEventListener('load', async () => {
-        await loadAnnotations();
+        await Promise.all(BASE_IDS.map(fetchTablesAndAnnotations)); // 并行加载数据
+        console.log("所有注释加载完成:", annotations);
         createNote(document.body);
         observeDOMChanges();
     });
+
 })();
