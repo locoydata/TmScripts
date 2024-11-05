@@ -1,6 +1,6 @@
 import requests
 
-baseId = "appRUM56yVRGrEuin"
+baseId = "appWNNByUsenTcJML"
 tableIdOrName = "Warn"
 
 # Airtable API 基础 URL
