@@ -33,35 +33,36 @@
         });
     }
 
-    async function fetchTablesAndAnnotations(baseId) {
-        const tablesData = await fetchData(`https://api.airtable.com/v0/meta/bases/${baseId}/tables`);
+async function fetchTablesAndAnnotations(baseId) {
+    const tablesData = await fetchData(`https://api.airtable.com/v0/meta/bases/${baseId}/tables`);
 
-        for (const table of tablesData.tables) {
-            const tableName = table.name;
-            const primaryFieldId = table.primaryFieldId;
+    for (const table of tablesData.tables) {
+        const tableName = table.name;
+        const primaryFieldId = table.primaryFieldId;
+        const primaryFieldName = table.fields.find(field => field.id === primaryFieldId).name;
+        const recordsData = await fetchData(`https://api.airtable.com/v0/${baseId}/${tableName}`);
 
-            // 从 tablesData 中找到 primary field 的 name
-            const primaryFieldName = table.fields.find(field => field.id === primaryFieldId).name;
-
-
-            const recordsData = await fetchData(`https://api.airtable.com/v0/${baseId}/${tableName}`);
-
-            recordsData.records.forEach(record => {
-                const primaryFieldValue = record.fields[primaryFieldName];
-
-                const otherFieldsValues = Object.keys(record.fields)
-                .filter(field => field !== primaryFieldName)
-                .map(field => record.fields[field])
+        recordsData.records.forEach(record => {
+            const primaryFieldValue = record.fields[primaryFieldName];
+            const otherFieldsValues = Object.keys(record.fields)
+                .filter(field => field !== primaryFieldName && field !== "来源" && field !== "记录时间") //排除名为 "来源" 和 "记录时间" 的字段
+                .map(field => {
+                    const fieldValue = record.fields[field];
+                    return fieldValue ? `${field}: ${fieldValue}<br>` : null; // 在每个字段后添加 <br>
+                })
                 .filter(Boolean)
                 .join(' ');
 
-                if (!annotations[primaryFieldValue]) {
-                    annotations[primaryFieldValue] = [];
-                }
-                annotations[primaryFieldValue].push(otherFieldsValues);
-            });
-        }
+            // 添加表名到注释内容
+            const annotationWithTableName = `[${tableName}]<br>${otherFieldsValues}`; // 在表名后添加 <br>
+
+            if (!annotations[primaryFieldValue]) {
+                annotations[primaryFieldValue] = [];
+            }
+            annotations[primaryFieldValue].push(annotationWithTableName); // 将包含表名的注释内容存入 annotations
+        });
     }
+}
 
     // 创建注释div
     function createNote(node) {
@@ -69,7 +70,7 @@
             const text = node.nodeValue;
             const annotatedKeys = new Set();
 
-            for (const [key, value] of Object.entries(annotations)) {
+            for (const [key, values] of Object.entries(annotations)) {
                 const regex = new RegExp(key, 'g');
                 if (regex.test(text) && !annotatedKeys.has(key)) {
                     // 找到匹配项所在 span 的父元素（即 dtl-sku div）
@@ -93,19 +94,19 @@
                     annotationDiv.style.borderRadius = '3px';
 
                     // 存储所有匹配到的注释
-                    const allAnnotations = annotations[key] || [];
+                    const allAnnotations = values;
 
                     // 如果存在匹配的注释
                     if (allAnnotations.length > 0) {
                         // 循环显示所有注释
                         allAnnotations.forEach((annotation, index) => {
                             const annotationSpan = document.createElement('span');
-                            annotationSpan.textContent = `${annotation}`; //注释内容
-                            annotationSpan.title = annotation;
+                            annotationSpan.innerHTML = `${annotation}`; //注释内容
+                            annotationSpan.title = annotation
                             annotationDiv.appendChild(annotationSpan);
 
                             if (index < allAnnotations.length - 1) {
-                                annotationDiv.appendChild(document.createElement('br'));
+                                annotationDiv.appendChild(document.createElement('br')); //匹配内容在一个表中有多个注释,用以换行
                             }
                         });
 
