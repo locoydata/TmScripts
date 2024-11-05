@@ -1,11 +1,11 @@
 import requests
 
-baseId = "appWNNByUsenTcJML"
+baseId = "appRUM56yVRGrEuin"
 tableIdOrName = "Warn"
 
 # Airtable API 基础 URL
-#base_url = f"https://api.airtable.com/v0/meta/bases/{baseId}/tables"
-base_url = f"https://api.airtable.com/v0/{baseId}/{tableIdOrName}"
+base_url = f"https://api.airtable.com/v0/meta/bases/{baseId}/tables"
+#base_url = f"https://api.airtable.com/v0/{baseId}/{tableIdOrName}"
 # Airtable Base ID (替换成您的 Base ID)
 
 # Airtable Access Token (替换成您的 Personal Access Token)
