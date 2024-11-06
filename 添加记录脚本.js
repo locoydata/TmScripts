@@ -17,10 +17,14 @@
     // Airtable 配置
     const ACCESS_TOKEN = 'patbkrCcuDhqSEPik.f9945b399f40ab7dbeff15e8b436b8fa47de166bab355e6209c51c86106b4549'; // Airtable API 访问令牌
     const BASES = {
-        'Annotations': 'appWNNByUsenTcJML', // Base ID 1
+        'ae sku': 'appWNNByUsenTcJML',
+        'ae供应链': 'appg0WaUPMbz68tVM',
+        'dd sku': 'appifrPrAvt6VRj8p',
+        'dd供应链': 'appbYNmfjlgabA2tO',
+
         'WebReminder': 'appe3cvzz8IDpyNRq', // Base ID 2
         'Highlighter': 'appfvvlcRZhbJhWA2',
-        'ae供应链': 'appg0WaUPMbz68tVM',
+
     };
 
     // 动态获取表名和字段名
