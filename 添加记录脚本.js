@@ -20,7 +20,7 @@
         'Annotations': 'appWNNByUsenTcJML', // Base ID 1
         'WebReminder': 'appe3cvzz8IDpyNRq', // Base ID 2
         'Highlighter': 'appfvvlcRZhbJhWA2',
-        'ae半托供应链': 'appg0WaUPMbz68tVM',
+        'ae供应链': 'appg0WaUPMbz68tVM',
     };
 
     // 动态获取表名和字段名
@@ -186,7 +186,7 @@
 
     // 更新字段动态显示
     function updateFields() {
-        const requiredFields = ["匹配文本", "注释内容", "高亮文本"]; // 必填字段名称列表
+        const requiredFields = ["SKU", "SKU备注", "SKU供应商", "SKU采购链接", "供应商", "供应商链接"]; // 必填字段名称列表
         const tableName = document.getElementById('tableSelect').value;
         const fieldsContainer = document.getElementById('fieldsContainer');
         const fields = currentTables.find(table => table.name === tableName).fields;
@@ -224,12 +224,13 @@
             // 修改<label style="flex: 0 0 150px;">调整模态框中字段名的宽度
             return `
             <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                <label style="flex: 0 0 120px;">${label}</label>
+                <label style="flex: 0 0 150px;">${label}</label>
                 ${inputElement}
             </div>
         `;
         }).join('');
     }
+
 
 
     // 监听数据库选择的变化
