@@ -90,16 +90,19 @@ async function fetchTablesAndAnnotations(baseId) {
                     const annotationDiv = document.createElement('div');
                     annotationDiv.classList.add(`annotation-${key}`);
                     annotationDiv.style.color = 'blue';
-                    annotationDiv.style.marginTop = '5px'; // 设置注释距离原元素的距离
-                    annotationDiv.style.wordWrap = 'break-word';
-                    annotationDiv.style.maxWidth = '200px';
-                    annotationDiv.style.overflow = 'hidden'; //隐藏任何超出 annotationDiv 边界的元素内容
-                    annotationDiv.style.textOverflow = 'ellipsis'; //裁剪的文本末尾添加省略号（...）
-                    annotationDiv.style.whiteSpace = 'nowrap'; // 阻止文本在 annotationDiv 内部换行
+                    annotationDiv.style.marginTop = '5px';
+                    annotationDiv.style.wordWrap = 'break-word'; // 允许字段内容内的换行
+                    annotationDiv.style.maxWidth = '300px';
                     annotationDiv.style.border = '1px solid #ccc';
                     annotationDiv.style.backgroundColor = '#f9f9f9';
                     annotationDiv.style.padding = '5px';
                     annotationDiv.style.borderRadius = '3px';
+
+
+                    // 添加以下样式以隐藏超出部分并显示省略号
+                    annotationDiv.style.overflow = 'hidden';
+                    annotationDiv.style.textOverflow = 'ellipsis';
+                    annotationDiv.style.whiteSpace = 'nowrap'; // 防止链接文本换行
 
                     // 存储所有匹配到的注释
                     const allAnnotations = values;
