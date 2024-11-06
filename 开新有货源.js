@@ -4,17 +4,13 @@
 // @version      1.3
 // @description  采集商品信息并上传到 Airtable，防止重复上传, 支持北京聚源百成网络科技站点
 // @author       [思钱想厚]
-// @match        *://www.k3.cn/*
-// @match        *://www.2tong.cn/*
-// @match        *://www.yoduo.com/*
-// @match        *://xy.k3.cn/*
-// @match        *://www.bao66.cn/*
-// @match        *://www.xingfujie.cn/*
-// @match        *://www.juyi5.cn/*
-
+// @match        *://*.k3.cn/p/*
+// @match        *://*.2tong.cn/p/*
+// @match        *://*.yoduo.com/p/*
+// @match        *://*.bao66.cn/p/*
+// @match        *://*.xingfujie.cn/p/*
+// @match        *://*.juyi5.cn/p/*
 // @grant        GM_xmlhttpRequest
-// @updateURL    https://locoydata.github.io/TmScripts/开新有货源.js
-// @downloadURL  https://locoydata.github.io/TmScripts/开新有货源.js
 // ==/UserScript==
 
 (function() {
@@ -23,7 +19,7 @@
     // 获取 Airtable API 密钥和表格 ID
     const ACCESS_TOKEN = 'patbkrCcuDhqSEPik.f9945b399f40ab7dbeff15e8b436b8fa47de166bab355e6209c51c86106b4549'; // Airtable API 访问令牌
     const BASE_ID = 'appuciOCDpoyVJCHB'; // Base ID
-    const TABLE_NAME = '开新有'; // Airtable 表格名称
+    const TABLE_NAME = '开新有选品'; // Airtable 表格名称
     const IMGBB_API_KEY = '871a92f8b305b46b8fc884b518dbf717'; //  替换为你的 imgbb API key
 
     // 创建悬浮按钮
