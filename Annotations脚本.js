@@ -46,9 +46,15 @@ async function fetchTablesAndAnnotations(baseId) {
             const primaryFieldValue = record.fields[primaryFieldName];
             const otherFieldsValues = Object.keys(record.fields)
                 .filter(field => field !== primaryFieldName && field !== "来源" && field !== "记录时间") //排除名为 "来源" 和 "记录时间" 的字段
-                .map(field => {
-                    const fieldValue = record.fields[field];
-                    return fieldValue ? `${field}: ${fieldValue}<br>` : null; // 在每个字段后添加 <br>
+            .map(field => {
+                let fieldValue = record.fields[field];
+                let fieldContent = fieldValue; // 用于存储最终显示的内容
+                // 检查 fieldValue 是否包含 URL，无需检查类型
+                if (fieldValue && String(fieldValue).startsWith('http')) {
+                    const url = String(fieldValue).split('?')[0]; // 去除 URL 参数
+                    fieldContent = `<a href="${url}" target="_blank" rel="noopener noreferrer" style="text-decoration: underline; color: black;">${url}</a>`; // 创建超链接
+                }
+                    return fieldValue ? `${field}: ${fieldContent}<br>` : null; // 在每个字段后添加 <br>
                 })
                 .filter(Boolean)
                 .join(' ');
@@ -86,8 +92,10 @@ async function fetchTablesAndAnnotations(baseId) {
                     annotationDiv.style.color = 'blue';
                     annotationDiv.style.marginTop = '5px'; // 设置注释距离原元素的距离
                     annotationDiv.style.wordWrap = 'break-word';
-                    annotationDiv.style.maxWidth = '300px';
-                    annotationDiv.style.whiteSpace = 'normal';
+                    annotationDiv.style.maxWidth = '200px';
+                    annotationDiv.style.overflow = 'hidden'; //隐藏任何超出 annotationDiv 边界的元素内容
+                    annotationDiv.style.textOverflow = 'ellipsis'; //裁剪的文本末尾添加省略号（...）
+                    annotationDiv.style.whiteSpace = 'nowrap'; // 阻止文本在 annotationDiv 内部换行
                     annotationDiv.style.border = '1px solid #ccc';
                     annotationDiv.style.backgroundColor = '#f9f9f9';
                     annotationDiv.style.padding = '5px';
@@ -102,7 +110,7 @@ async function fetchTablesAndAnnotations(baseId) {
                         allAnnotations.forEach((annotation, index) => {
                             const annotationSpan = document.createElement('span');
                             annotationSpan.innerHTML = `${annotation}`; //注释内容
-                            annotationSpan.title = annotation
+                            annotationSpan.title = annotation.replace(/<br>/g, '\n').replace(/<[^>]*>/g, ''); // 更新 title 属性
                             annotationDiv.appendChild(annotationSpan);
 
                             if (index < allAnnotations.length - 1) {
