@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         整合油猴脚本框架
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  整合多个油猴脚本的框架，包含浮动按钮和弹出菜单
 // @author       [思钱想厚]
 // @match        *://*/*

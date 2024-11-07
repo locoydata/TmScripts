@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Highlighter
 // @namespace    http://tampermonkey.net/
-// @version      1.5
+// @version      1.6
 // @description  Highlights text on pages matching Airtable data
 // @author       [思钱想厚]
 // @match        *://erp2.cnfth.com/*

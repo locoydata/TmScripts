@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WebReminder
 // @namespace    http://tampermonkey.net/
-// @version      3.0
+// @version      3.1
 // @description  根据 Airtable 数据在指定网站上显示浮动提醒，支持按钮点击显示信息框，并提供删除提醒功能
 // @author       [思钱想厚]
 // @match        *://*/*

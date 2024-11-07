@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Annotations
 // @namespace    http://tampermonkey.net/
-// @version      1.7
+// @version      1.8
 // @description  在网页中直接显示注释并高亮文本，添加折叠/展开功能
 // @author       [思钱想厚]
 // @match        *://erp2.cnfth.com/*

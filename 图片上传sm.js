@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         图片上传Sm.ms
 // @namespace    https://github.com/your-username
-// @version      1.1
+// @version      1.2
 // @description  图片上传到Sm.ms图床
 // @author       [思钱想厚]
 // @match        *://*/*
