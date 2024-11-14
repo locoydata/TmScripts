@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         添加记录
 // @namespace    http://tampermonkey.net/
-// @version      1.5
+// @version      1.6
 // @description  选择数据库和表并向 Airtable 添加记录
 // @author       [思钱想厚]
-// @match        ://erp2.cnfth.com/
-// @match        ://*.1688.com/*
-// @exclude      ://airtable.com/  // 排除页面
+// @match        *://erp2.cnfth.com/
+// @match        *://*.1688.com/*
+// @exclude      *://airtable.com/  // 排除页面
 // @grant        none
 // @updateURL    https://locoydata.github.io/TmScripts/添加记录脚本.js
 // @downloadURL  https://locoydata.github.io/TmScripts/添加记录脚本.js
