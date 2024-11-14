@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         Annotations
 // @namespace    http://tampermonkey.net/
-// @version      1.9
+// @version      2.0
 // @description  在网页中直接显示注释并高亮文本，添加折叠/展开功能
 // @author       [思钱想厚]
 // @match        *://erp2.cnfth.com/*
 // @match        *://*.1688.com/*
+// @match        *://*.tradingview.com/*
 // @exclude      *://airtable.com/*  // 排除页面
 // @grant        GM_xmlhttpRequest
 // @updateURL    https://locoydata.github.io/TmScripts/Annotations脚本.js // 更新你的实际地址
