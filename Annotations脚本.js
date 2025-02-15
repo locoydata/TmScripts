@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Annotations
 // @namespace    http://tampermonkey.net/
-// @version      2.0
+// @version      2.1
 // @description  在网页中直接显示注释并高亮文本，添加折叠/展开功能
 // @author       [思钱想厚]
 // @match        *://erp2.cnfth.com/*
@@ -17,7 +17,8 @@
     'use strict';
 
     const ACCESS_TOKEN = 'patbkrCcuDhqSEPik.f9945b399f40ab7dbeff15e8b436b8fa47de166bab355e6209c51c86106b4549'; // 你的访问令牌
-    const BASE_IDS = ['appWNNByUsenTcJML', 'appg0WaUPMbz68tVM', 'appifFEoL0qEA9944']; // 你的数据库 ID
+    const BASE_IDS = ['appWNNByUsenTcJML', 'appg0WaUPMbz68tVM', 'appifFEoL0qEA9944', 'appifrPrAvt6VRj8p', 'appbYNmfjlgabA2tO']; // 你的数据库 ID
+                    // ae sku               ae供应链                 提示                dd sku               'dd供应链
     const annotations = {};
     const baseNames = {}; // 用于存储数据库ID和名称的映射
 
