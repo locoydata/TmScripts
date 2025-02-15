@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Highlighter
 // @namespace    http://tampermonkey.net/
-// @version      1.8
+// @version      1.9
 // @description  Highlights text on pages matching Airtable data
 // @author       [思钱想厚]
 // @match        *://erp2.cnfth.com/*
@@ -142,6 +142,7 @@
                             span.style.border = '2px solid red';  // 添加红色边框
                             span.style.padding = '0 2px';  // 可选：为边框添加一些内边距
                         }
+                        span.textContent = match[0];
                         // 如果当前表格是 "仓库"，添加红色边框
                         if (tableName === "仓库") {
                             span.style.border = '3px solid blue';  // 添加红色边框
